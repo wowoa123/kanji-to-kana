@@ -3,12 +3,12 @@
 import tkinter.messagebox
 from tkinter import *
 import win32api
-import image_analy
+from pynput import keyboard
 import mecab
-from gui_button import *
-import screenshot
+from area_select import *
 from pynput.keyboard import Listener
 import logging
+import configparser
 
 # 创建tkinter主窗口
 root = tkinter.Tk()
@@ -20,12 +20,71 @@ root.resizable(False, False)
 root.title("kanji to kana")
 #窗口图标
 root.iconbitmap('favicon.ico')
+root.attributes('-topmost', True)
 
-config_name = 'config.cfg'
+config_name = 'config.ini'
+
+def config_save(option, value):
+    cf = configparser.ConfigParser()
+    cf.read(config_name)
+    cf.set('config', option, value)
+    with open(config_name, 'r+') as f:
+        cf.write(f)
+
+def config_get(option):
+    cf = configparser.ConfigParser()
+    cf.read(config_name)
+    return cf.get("config", option)
+
 if not os.path.exists(config_name):
+    cf = configparser.ConfigParser()
+    cf.add_section('config')
+    cf.set("config", "area", " ")
+    cf.set("config", "hotkey", " ")
+    cf.set("config", "stop", " ")
     with open(config_name, 'w') as f:
-        f.write('area:                     hotkey:  stop:  ')
-        f.seek(0, 0)
+        cf.write(f)
+
+def on_any_press(key):
+    if (key in keyboard.Key):
+        return True
+    else:
+        c = key.char
+        if (c > ' ' and c < 'A') or (c > 'Z' and c < 'a') or (c > 'z' and c < 127):
+            return True
+        elif c.lower() >= 'a' and c.lower() <= 'z':
+            return True
+    return False
+
+def on_press1(key):
+    if on_any_press(key):
+        config_save('hotkey', str(key))
+        return False
+
+def on_press2(key):
+    if on_any_press(key):
+        config_save('stop', str(key))
+        return False
+
+def on_press(key):
+    pass
+
+def on_release(key):
+    pass
+
+def hotkey_release(key):
+    c = str(key)
+    hotkey = config_get('hotkey')
+    stop = config_get('stop')
+    area = config_get('area')
+    area = area[1:-1]
+    area = area.split(',')
+    if c == hotkey:
+        print(mecab.to_kana(int(area[0]), int(area[2]), int(area[1]), int(area[3])))
+        #r = tkinter.Label(text, text=result)
+        #r.pack()
+    elif c == stop:
+        return False
 
 def buttonCaptureClick():
     # 最小化主窗口
@@ -46,25 +105,29 @@ def buttonCaptureClick():
     root.state('normal')
     os.remove(filename)
 
-    with open(config_name, 'r+') as f:
-        index = f.read().find('area')
-        f.seek(index)
-        f.write('area:' + str(w.pos_get()))
-        f.seek(0, 0)
+    config_save('area', str(w.pos_get()))
 
     return True
 
 def buttonHotKeyClick():
-    pass
+    #监听
+    with Listener(on_press=on_press1, on_release=on_release) as listener:
+        listener.join()
+    #提示
+    tkinter.messagebox.showinfo('', config_get('hotkey') + '键已被设为默认键')
 
     return True
 
 
 def buttonHookOnClick():
-    pass
+    with Listener(on_press=on_press, on_release=hotkey_release) as listener:
+        listener.join()
 
 def buttonHookOffClick():
-    pass
+    with Listener(on_press=on_press2, on_release=on_release) as listener:
+        listener.join()
+    # 提示
+    tkinter.messagebox.showinfo('', config_get('stop') + '键已被设为停止键')
 
     return True
 
