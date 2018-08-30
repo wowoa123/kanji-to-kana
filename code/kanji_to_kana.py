@@ -38,16 +38,6 @@ def config_get(option):
     return cf.get("config", option)
 
 
-if not os.path.exists(config_name):
-    cf = configparser.ConfigParser()
-    cf.add_section('config')
-    cf.set("config", "area", " ")
-    cf.set("config", "hotkey", " ")
-    cf.set("config", "stop", " ")
-    with open(config_name, 'w') as f:
-        cf.write(f)
-
-
 def on_any_press(key):
     if key in keyboard.Key:
         return True
@@ -141,6 +131,15 @@ def buttonHookOffClick():
 
     return True
 
+
+if not os.path.exists(config_name):
+    cf = configparser.ConfigParser()
+    cf.add_section('config')
+    cf.set("config", "area", " ")
+    cf.set("config", "hotkey", " ")
+    cf.set("config", "stop", " ")
+    with open(config_name, 'w') as f:
+        cf.write(f)
 
 # 截图区域按钮
 ButtonCapture = tkinter.Button(root, text='截图区域选择', command=buttonCaptureClick)
