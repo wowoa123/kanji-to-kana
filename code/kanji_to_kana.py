@@ -1,7 +1,9 @@
 # -*- coding:utf-8 -*-
 
 import configparser
+import subprocess
 import tkinter.messagebox
+from multiprocessing import Process
 
 from pynput import keyboard
 from pynput.keyboard import Listener
@@ -21,6 +23,9 @@ root.title("kanji to kana")
 root.iconbitmap('favicon.ico')
 root.attributes('-topmost', True)
 
+exist_p = False
+p_pos = None
+
 config_name = 'config.ini'
 
 
@@ -36,6 +41,14 @@ def config_get(option):
     cf = configparser.ConfigParser()
     cf.read(config_name)
     return cf.get("config", option)
+
+
+def show_text(sentence):
+    text = tkinter.Tk()
+    text.overrideredirect(True)
+    text.geometry('1000x150+400+50')
+    w = tkinter.Label(text, text=sentence)
+    w.pack()
 
 
 def on_any_press(key):
@@ -79,7 +92,16 @@ def hotkey_release(key):
     area = area.split(',')
     if c == hotkey:
         result = mecab.to_kana(int(area[0]), int(area[2]), int(area[1]), int(area[3]))
-        print(result)
+        global exist_p
+        global p_pos
+        if not exist_p:
+            p = subprocess.Popen(['python', 'text_area.py', result])
+            p_pos = p
+            exist_p = True
+        else:
+            p = subprocess.Popen(['python', 'text_area.py', result])
+            p_pos.terminate()
+            p_pos = p
     elif c == stop:
         return False
 
