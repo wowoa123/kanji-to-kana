@@ -8,7 +8,7 @@ def text(master, sentence):
     master.attributes('-topmost', True,
                       '-alpha', 0.5,
                       '-toolwindow', True)
-    label = tkinter.Label(master, text=sentence, font=("Arial", 30))
+    label = tkinter.Label(master, text=sentence, font=("Arial", 25))
     label.pack()
 
 
