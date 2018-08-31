@@ -95,11 +95,11 @@ def hotkey_release(key):
         global exist_p
         global p_pos
         if not exist_p:
-            p = subprocess.Popen(['python', 'text_area.py', result])
+            p = subprocess.Popen(['pythonw', 'text_area.py', result])
             p_pos = p
             exist_p = True
         else:
-            p = subprocess.Popen(['python', 'text_area.py', result])
+            p = subprocess.Popen(['pythonw', 'text_area.py', result])
             p_pos.terminate()
             p_pos = p
     elif c == stop:
